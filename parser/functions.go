@@ -79,6 +79,8 @@ func (p *Parser) parseFunctionArgument() *ast.FunctionArgument {
 func (p *Parser) parseFunctionCall(callable ast.Expr) *ast.FunctionCallExpr {
 	expr := &ast.FunctionCallExpr{}
 	expr.FunctionName = callable
+	expr.PositionImpl = &ast.PositionImpl{}
+	expr.SetPosition(p.current.Begin, p.current.End)
 	return p.parseFunctionArguments(expr)
 }
 
