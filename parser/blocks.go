@@ -1,8 +1,8 @@
 package parser
 
 import (
-	"github.com/stephens2424/php/ast"
-	"github.com/stephens2424/php/token"
+	"github.com/codelingo/php/ast"
+	"github.com/codelingo/php/token"
 )
 
 func (p *Parser) parseBlock() *ast.Block {

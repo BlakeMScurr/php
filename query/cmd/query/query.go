@@ -9,9 +9,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/stephens2424/php/ast"
-	"github.com/stephens2424/php/parser"
-	"github.com/stephens2424/php/query"
+	"github.com/codelingo/php/ast"
+	"github.com/codelingo/php/parser"
+	"github.com/codelingo/php/query"
 )
 
 func main() {

@@ -6,7 +6,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/stephens2424/php/ast"
+	"github.com/codelingo/php/ast"
 )
 
 type Printer struct {

@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/stephens2424/php/ast"
-	"github.com/stephens2424/php/passes/printing"
+	"github.com/codelingo/php/ast"
+	"github.com/codelingo/php/passes/printing"
 )
 
 func assertEquals(found, expected ast.Node) bool {

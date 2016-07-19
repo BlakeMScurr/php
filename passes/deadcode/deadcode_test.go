@@ -3,8 +3,8 @@ package deadcode
 import (
 	"testing"
 
-	"github.com/stephens2424/php/ast"
-	"github.com/stephens2424/php/parser"
+	"github.com/codelingo/php/ast"
+	"github.com/codelingo/php/parser"
 )
 
 func TestDeadFunctions(t *testing.T) {

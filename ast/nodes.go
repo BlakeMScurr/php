@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/stephens2424/php/token"
+	"github.com/codelingo/php/token"
 )
 
 type Positionable interface {
