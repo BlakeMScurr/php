@@ -7,8 +7,8 @@ import (
 	"reflect"
 	"strconv"
 
-	phpast "github.com/stephens2424/php/ast"
-	"github.com/stephens2424/php/ast/printer"
+	phpast "github.com/codelingo/php/ast"
+	"github.com/codelingo/php/ast/printer"
 )
 
 func (t *Togo) ToGoStmt(php phpast.Statement) goast.Stmt {

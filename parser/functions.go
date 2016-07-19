@@ -1,9 +1,9 @@
 package parser
 
 import (
-	"github.com/stephens2424/php/ast"
-	"github.com/stephens2424/php/lexer"
-	"github.com/stephens2424/php/token"
+	"github.com/codelingo/php/ast"
+	"github.com/codelingo/php/lexer"
+	"github.com/codelingo/php/token"
 )
 
 func (p *Parser) parseFunctionStmt(inMethod bool) *ast.FunctionStmt {
