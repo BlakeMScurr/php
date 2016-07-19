@@ -8,8 +8,33 @@ import (
 	"github.com/codelingo/php/token"
 )
 
+type Positionable interface {
+	StartPos() token.Position
+	EndPos() token.Position
+	SetPosition(start, end token.Position)
+}
+
+type PositionImpl struct {
+	start token.Position
+	end   token.Position
+}
+
+func (p *PositionImpl) StartPos() token.Position {
+	return p.start
+}
+
+func (p *PositionImpl) EndPos() token.Position {
+	return p.end
+}
+
+func (p *PositionImpl) SetPosition(start, end token.Position) {
+	p.start = start
+	p.end = end
+}
+
 // Node encapsulates every AST node.
 type Node interface {
+	Positionable
 	String() string
 	Children() []Node
 }
@@ -47,6 +72,7 @@ type Format struct{}
 // An Identifier is a raw string that can be used to identify
 // a variable, function, class, constant, property, etc.
 type Identifier struct {
+	*PositionImpl
 	Parent Node
 	Value  string
 }
@@ -66,6 +92,7 @@ func (i Identifier) Children() []Node {
 }
 
 type Variable struct {
+	*PositionImpl
 	// Name is the identifier for the variable, which may be
 	// a dynamic expression.
 	Name Dynamic
@@ -99,6 +126,7 @@ func (v Variable) EvaluatesTo() Type {
 func (v Variable) Declares() DeclarationType { return NoDeclaration }
 
 type GlobalDeclaration struct {
+	*PositionImpl
 	Identifiers []*Variable
 }
 
@@ -117,7 +145,9 @@ func (g GlobalDeclaration) String() string {
 func (g GlobalDeclaration) Declares() DeclarationType { return NoDeclaration }
 
 // EmptyStatement represents a statement that does nothing.
-type EmptyStatement struct{}
+type EmptyStatement struct {
+	*PositionImpl
+}
 
 func (e EmptyStatement) String() string            { return "" }
 func (e EmptyStatement) Children() []Node          { return nil }
@@ -147,6 +177,7 @@ type Expr interface {
 // BinaryExpression is an expression that applies an operator to one, two, or three
 // operands. The operator determines how many operands it should contain.
 type BinaryExpr struct {
+	*PositionImpl
 	Antecedent Expr
 	Subsequent Expr
 	Type       Type
@@ -168,6 +199,7 @@ func (b BinaryExpr) EvaluatesTo() Type {
 func (b BinaryExpr) Declares() DeclarationType { return NoDeclaration }
 
 type TernaryCallExpr struct {
+	*PositionImpl
 	Condition, True, False Expr
 	Type                   Type
 }
@@ -189,6 +221,7 @@ func (t TernaryCallExpr) Declares() DeclarationType { return NoDeclaration }
 // UnaryExpression is an expression that applies an operator to only one operand. The
 // operator may precede or follow the operand.
 type UnaryCallExpr struct {
+	*PositionImpl
 	Operand   Expr
 	Operator  string
 	Preceding bool
@@ -239,6 +272,7 @@ func Echo(exprs ...Expr) EchoStmt {
 // Echo represents an echo statement. It may be either a literal statement
 // or it may be from data outside PHP-mode, such as "here" in: <? not here ?> here <? not here ?>
 type EchoStmt struct {
+	*PositionImpl
 	Expressions []Expr
 }
 
@@ -311,10 +345,12 @@ type ThrowStmt struct {
 func (t ThrowStmt) Declares() DeclarationType { return NoDeclaration }
 
 type IncludeStmt struct {
+	*PositionImpl
 	Include
 }
 
 type Include struct {
+	*PositionImpl
 	Expressions []Expr
 }
 
@@ -337,6 +373,7 @@ func (i Include) EvaluatesTo() Type {
 func (i Include) Declares() DeclarationType { return NoDeclaration }
 
 type ExitStmt struct {
+	*PositionImpl
 	Expr Expr
 }
 
@@ -351,6 +388,7 @@ func (e ExitStmt) String() string {
 func (e ExitStmt) Declares() DeclarationType { return NoDeclaration }
 
 type NewCallExpr struct {
+	*PositionImpl
 	Class     Dynamic
 	Arguments []Expr
 }
@@ -378,6 +416,7 @@ func (c NewCallExpr) Children() []Node {
 func (n NewCallExpr) Declares() DeclarationType { return NoDeclaration }
 
 type AssignmentExpr struct {
+	*PositionImpl
 	Assignee Assignable
 	Value    Expr
 	Operator string
@@ -406,10 +445,12 @@ type Assignable interface {
 }
 
 type FunctionCallStmt struct {
+	*PositionImpl
 	FunctionCallExpr
 }
 
 type FunctionCallExpr struct {
+	*PositionImpl
 	FunctionName Dynamic
 	Arguments    []Expr
 }
@@ -433,6 +474,7 @@ func (f FunctionCallExpr) Children() []Node {
 func (f FunctionCallExpr) Declares() DeclarationType { return NoDeclaration }
 
 type Block struct {
+	*PositionImpl
 	Statements []Statement
 	Scope      *Scope
 }
@@ -452,6 +494,7 @@ func (b Block) Children() []Node {
 func (_ Block) Declares() DeclarationType { return NoDeclaration }
 
 type FunctionStmt struct {
+	*PositionImpl
 	*FunctionDefinition
 	Body *Block
 }
@@ -474,6 +517,7 @@ func (f FunctionStmt) Children() []Node {
 }
 
 type AnonymousFunction struct {
+	*PositionImpl
 	ClosureVariables []*FunctionArgument
 	Arguments        []*FunctionArgument
 	Body             *Block
@@ -501,6 +545,7 @@ func (a AnonymousFunction) String() string {
 func (a AnonymousFunction) Declares() DeclarationType { return FunctionDeclaration }
 
 type FunctionDefinition struct {
+	*PositionImpl
 	Name      string
 	Arguments []*FunctionArgument
 }
@@ -518,6 +563,7 @@ func (fd FunctionDefinition) String() string {
 }
 
 type FunctionArgument struct {
+	*PositionImpl
 	TypeHint string
 	Default  Expr
 	Variable *Variable
@@ -538,6 +584,7 @@ func (fa FunctionArgument) Children() []Node {
 }
 
 type Class struct {
+	*PositionImpl
 	Name       string
 	Extends    string
 	Implements []string
@@ -565,6 +612,7 @@ func (c Class) Children() []Node {
 func (c Class) Declares() DeclarationType { return ClassDeclaration }
 
 type Constant struct {
+	*PositionImpl
 	Name  string
 	Value interface{}
 }
@@ -573,6 +621,7 @@ func (c Constant) Children() []Node { return nil }
 func (c Constant) String() string   { return c.Name }
 
 type ConstantExpr struct {
+	*PositionImpl
 	*Variable
 }
 
@@ -581,6 +630,7 @@ func (c Constant) Declares() DeclarationType { return ConstantDeclaration }
 func (c Constant) EvaluatesTo() Type { return Unknown }
 
 type Interface struct {
+	*PositionImpl
 	Name      string
 	Inherits  []string
 	Methods   []Method
@@ -602,6 +652,7 @@ func (i Interface) Children() []Node {
 func (i Interface) Declares() DeclarationType { return InterfaceDeclaration }
 
 type Property struct {
+	*PositionImpl
 	Name           string
 	Visibility     Visibility
 	Type           Type
@@ -621,6 +672,7 @@ func (p Property) Children() []Node {
 }
 
 type PropertyCallExpr struct {
+	*PositionImpl
 	Receiver Dynamic
 	Name     Dynamic
 	Type     Type
@@ -647,6 +699,7 @@ func (p PropertyCallExpr) Children() []Node {
 func (p PropertyCallExpr) Declares() DeclarationType { return NoDeclaration }
 
 type ClassExpr struct {
+	*PositionImpl
 	Receiver Dynamic
 	Expr     Dynamic
 	Type     Type
@@ -678,6 +731,7 @@ func (c ClassExpr) AssignableType() Type {
 func (c ClassExpr) Declares() DeclarationType { return NoDeclaration }
 
 type Method struct {
+	*PositionImpl
 	*FunctionStmt
 	Visibility Visibility
 }
@@ -691,6 +745,7 @@ func (m Method) Children() []Node {
 }
 
 type MethodCallExpr struct {
+	*PositionImpl
 	Receiver Dynamic
 	*FunctionCallExpr
 }
@@ -727,11 +782,13 @@ func (v Visibility) Token() token.Token {
 }
 
 type IfStmt struct {
+	*PositionImpl
 	Branches  []IfBranch
 	ElseBlock Statement
 }
 
 type IfBranch struct {
+	*PositionImpl
 	Condition Expr
 	Block     Statement
 }
@@ -762,6 +819,7 @@ func (i IfStmt) Children() []Node {
 func (i IfStmt) Declares() DeclarationType { return NoDeclaration }
 
 type SwitchStmt struct {
+	*PositionImpl
 	Expr        Expr
 	Cases       []*SwitchCase
 	DefaultCase *Block
@@ -787,6 +845,7 @@ func (s SwitchStmt) Children() []Node {
 func (_ SwitchStmt) Declares() DeclarationType { return NoDeclaration }
 
 type SwitchCase struct {
+	*PositionImpl
 	Expr  Expr
 	Block Block
 }
@@ -803,6 +862,7 @@ func (s SwitchCase) Children() []Node {
 }
 
 type ForStmt struct {
+	*PositionImpl
 	Initialization []Expr
 	Termination    []Expr
 	Iteration      []Expr
@@ -830,6 +890,7 @@ func (f ForStmt) Children() []Node {
 func (_ ForStmt) Declares() DeclarationType { return NoDeclaration }
 
 type WhileStmt struct {
+	*PositionImpl
 	Termination Expr
 	LoopBlock   Statement
 }
@@ -848,6 +909,7 @@ func (w WhileStmt) Children() []Node {
 func (_ WhileStmt) Declares() DeclarationType { return NoDeclaration }
 
 type DoWhileStmt struct {
+	*PositionImpl
 	Termination Expr
 	LoopBlock   Statement
 }
@@ -866,6 +928,7 @@ func (d DoWhileStmt) Children() []Node {
 func (_ DoWhileStmt) Declares() DeclarationType { return NoDeclaration }
 
 type TryStmt struct {
+	*PositionImpl
 	TryBlock     *Block
 	FinallyBlock *Block
 	CatchStmts   []*CatchStmt
@@ -889,6 +952,7 @@ func (t TryStmt) Children() []Node {
 func (_ TryStmt) Declares() DeclarationType { return NoDeclaration }
 
 type CatchStmt struct {
+	*PositionImpl
 	CatchBlock *Block
 	CatchType  string
 	CatchVar   *Variable
@@ -903,6 +967,7 @@ func (c CatchStmt) Children() []Node {
 }
 
 type Literal struct {
+	*PositionImpl
 	Type  Type
 	Value string
 }
@@ -922,6 +987,7 @@ func (l Literal) Children() []Node {
 func (_ Literal) Declares() DeclarationType { return NoDeclaration }
 
 type ForeachStmt struct {
+	*PositionImpl
 	Source    Expr
 	Key       *Variable
 	Value     *Variable
@@ -944,6 +1010,7 @@ func (f ForeachStmt) Children() []Node {
 func (_ ForeachStmt) Declares() DeclarationType { return NoDeclaration }
 
 type ArrayExpr struct {
+	*PositionImpl
 	ArrayType
 	Pairs []ArrayPair
 }
@@ -963,6 +1030,7 @@ func (a ArrayExpr) Children() []Node {
 func (_ ArrayExpr) Declares() DeclarationType { return NoDeclaration }
 
 type ArrayPair struct {
+	*PositionImpl
 	Key   Expr
 	Value Expr
 }
@@ -987,6 +1055,7 @@ func (a ArrayExpr) AssignableType() Type {
 }
 
 type ArrayLookupExpr struct {
+	*PositionImpl
 	Array Dynamic
 	Index Expr
 }
@@ -1010,6 +1079,7 @@ func (a ArrayLookupExpr) AssignableType() Type {
 }
 
 type ArrayAppendExpr struct {
+	*PositionImpl
 	Array Dynamic
 }
 
@@ -1032,6 +1102,7 @@ func (a ArrayAppendExpr) String() string {
 func (_ ArrayAppendExpr) Declares() DeclarationType { return NoDeclaration }
 
 type ShellCommand struct {
+	*PositionImpl
 	Command string
 }
 
@@ -1049,6 +1120,7 @@ func (s ShellCommand) Children() []Node {
 func (_ ShellCommand) Declares() DeclarationType { return NoDeclaration }
 
 type ListStatement struct {
+	*PositionImpl
 	Assignees []Assignable
 	Value     Expr
 	Operator  string
@@ -1069,6 +1141,7 @@ func (l ListStatement) Children() []Node {
 func (_ ListStatement) Declares() DeclarationType { return NoDeclaration }
 
 type StaticVariableDeclaration struct {
+	*PositionImpl
 	Declarations []Dynamic
 }
 
@@ -1090,6 +1163,7 @@ func (s StaticVariableDeclaration) String() string {
 func (s StaticVariableDeclaration) Declares() DeclarationType { return NoDeclaration }
 
 type DeclareBlock struct {
+	*PositionImpl
 	Statements   *Block
 	Declarations []string
 }

@@ -31,6 +31,8 @@ func (p *Parser) parseFunctionDefinition() *ast.FunctionDefinition {
 		}
 	}
 	def.Name = p.current.Val
+	def.PositionImpl = &ast.PositionImpl{}
+	def.SetPosition(p.current.Begin, p.current.End)
 	def.Arguments = make([]*ast.FunctionArgument, 0)
 	p.expect(token.OpenParen)
 	if p.peek().Typ == token.CloseParen {
