@@ -173,9 +173,14 @@ func (p *Parser) parseAssignmentOperation(lhs, rhs ast.Expr, operator token.Item
 		p.errorf("%s is not assignable", lhs)
 	}
 	expr = ast.AssignmentExpr{
-		Assignee: assignee,
-		Operator: operator.Val,
-		Value:    rhs,
+		Assignee:     assignee,
+		Operator:     operator.Val,
+		Value:        rhs,
+		PositionImpl: &ast.PositionImpl{},
+	}
+	item, ok := p.exprs[lhs]
+	if ok {
+		expr.SetPosition(item.Begin, item.End)
 	}
 	return expr
 }
@@ -302,7 +307,9 @@ func (p *Parser) parseLiteral() ast.Expr {
 func (p *Parser) parseVariable() ast.Expr {
 	var expr *ast.Variable
 	p.expectCurrent(token.VariableOperator)
-	switch p.next(); {
+	p.next()
+	lhsItem := p.current
+	switch {
 	case lexer.IsKeyword(p.current.Typ, p.current.Val):
 		// keywords are all valid variable names
 		fallthrough
@@ -318,6 +325,7 @@ func (p *Parser) parseVariable() ast.Expr {
 		return nil
 	}
 
+	p.exprs[expr] = lhsItem
 	p.scope.Variable(expr)
 	return expr
 }
@@ -367,6 +375,7 @@ func (p *Parser) parseIdentifier() (expr ast.Expr) {
 		expr = ast.ConstantExpr{
 			Variable: v,
 		}
+		p.exprs[expr] = p.current
 		p.namespace.Constants[name] = append(p.namespace.Constants[name], v)
 		p.next()
 	}
