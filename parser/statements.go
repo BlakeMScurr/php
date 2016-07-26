@@ -121,7 +121,9 @@ func (p *Parser) parseStmt() ast.Statement {
 		}
 		var expr ast.Statement
 		if p.accept(token.HTML) {
-			expr = ast.Echo(&ast.Literal{Type: ast.String, Value: p.current.Val})
+			l := &ast.Literal{Type: ast.String, Value: p.current.Val, PositionImpl: &ast.PositionImpl{}}
+			l.SetPosition(p.current.Begin, p.current.End)
+			expr = ast.Echo(l)
 		}
 		p.next()
 		if p.current.Typ != token.EOF {

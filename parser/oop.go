@@ -43,7 +43,8 @@ func (p *Parser) parseClass() *ast.Class {
 		p.errorf("unexpected variable operand %s", p.current)
 	}
 
-	name := p.current.Val
+	cl := &ast.Class{Name: p.current.Val, PositionImpl: &ast.PositionImpl{}}
+	cl.SetPosition(p.current.Begin, p.current.End)
 	if p.peek().Typ == token.Extends {
 		p.expect(token.Extends)
 		p.expect(token.Identifier)
@@ -57,7 +58,7 @@ func (p *Parser) parseClass() *ast.Class {
 		}
 	}
 	p.expect(token.BlockBegin)
-	c := p.parseClassFields(&ast.Class{Name: name})
+	c := p.parseClassFields(cl)
 	p.namespace.ClassesAndInterfaces[c.Name] = c
 	return c
 }

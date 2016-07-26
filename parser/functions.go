@@ -56,7 +56,7 @@ func (p *Parser) parseFunctionDefinition() *ast.FunctionDefinition {
 }
 
 func (p *Parser) parseFunctionArgument() *ast.FunctionArgument {
-	arg := &ast.FunctionArgument{}
+	arg := &ast.FunctionArgument{PositionImpl: &ast.PositionImpl{}}
 	switch p.peek().Typ {
 	case token.Identifier, token.Array, token.Self:
 		p.next()
@@ -67,6 +67,7 @@ func (p *Parser) parseFunctionArgument() *ast.FunctionArgument {
 	}
 	p.expect(token.VariableOperator)
 	p.next()
+	arg.SetPosition(p.current.Begin, p.current.End)
 	arg.Variable = ast.NewVariable(p.current.Val)
 	if p.peek().Typ == token.AssignmentOperator {
 		p.expect(token.AssignmentOperator)
