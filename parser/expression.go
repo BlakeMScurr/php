@@ -285,20 +285,26 @@ func (p *Parser) parseOperandComponent(lhs ast.Expr) (expr ast.Expr) {
 }
 
 func (p *Parser) parseLiteral() ast.Expr {
+	l := &ast.Literal{Value: p.current.Val, PositionImpl: &ast.PositionImpl{}}
+	l.SetPosition(p.current.Begin, p.current.End)
 	switch p.current.Typ {
 	case token.StringLiteral:
-		return &ast.Literal{Type: ast.String, Value: p.current.Val}
+		l.Type = ast.String
+		return l
 	case token.BooleanLiteral:
-		return &ast.Literal{Type: ast.Boolean, Value: p.current.Val}
+		l.Type = ast.Boolean
+		return l
 	case token.NumberLiteral:
-		return &ast.Literal{Type: ast.Float, Value: p.current.Val}
+		l.Type = ast.Float
+		return l
 	case token.Null:
 		if p.peek().Typ == token.OpenParen {
 			expr := p.parseIdentifier()
 			p.backup()
 			return expr
 		}
-		return &ast.Literal{Type: ast.Null, Value: p.current.Val}
+		l.Type = ast.Null
+		return l
 	}
 	p.errorf("Unknown literal type")
 	return nil
