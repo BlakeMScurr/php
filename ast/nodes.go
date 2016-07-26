@@ -20,10 +20,16 @@ type PositionImpl struct {
 }
 
 func (p *PositionImpl) StartPos() token.Position {
+	if p == nil {
+		return token.Position{}
+	}
 	return p.start
 }
 
 func (p *PositionImpl) EndPos() token.Position {
+	if p == nil {
+		return token.Position{}
+	}
 	return p.end
 }
 
