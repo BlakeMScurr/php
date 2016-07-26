@@ -25,6 +25,8 @@ type Parser struct {
 	errors     ParseErrorList
 	parenLevel int
 
+	exprs map[ast.Expr]token.Item
+
 	file      *ast.File
 	namespace *ast.Namespace
 	scope     *ast.Scope
@@ -44,6 +46,7 @@ func NewParser() *Parser {
 		idx:       -1,
 		MaxErrors: 10,
 		FileSet:   ast.NewFileSet(),
+		exprs:     make(map[ast.Expr]token.Item),
 	}
 	return p
 }
